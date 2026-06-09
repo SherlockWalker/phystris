@@ -3,6 +3,7 @@ import mediapipe as mp
 from mediapipe import tasks as tasks
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
+import time
 
 # Visualisation stuffs, I got off Google's CoLab notebook
 import numpy as np
@@ -28,7 +29,7 @@ def drawLandmarks(rgb_image, detection_result):
 
 
 # Path to model, remember to change later when I have better code structure
-modelPath = "../pose_landmarker.task"
+modelPath = "pose_landmarker.task"
 
 # I got this bit from Google's documentation and guide on use of pose landmarker
 BaseOptions = tasks.BaseOptions
@@ -67,8 +68,4 @@ with PoseLandmarker.create_from_options(options) as landmarker:
         # Convert the frame received to a MediaPipe’s Image object.
         # This is Google's thing btw
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=convertedFrame)
-        landmarker.detect_async(mp_image, 50) # 50ms, change later
-
-
-        
-
+        landmarker.detect_async(mp_image, int(time.time() * 1000))
