@@ -26,8 +26,6 @@ def drawLandmarks(rgb_image, detection_result):
 
   return annotated_image
 
-
-
 # Path to model, remember to change later when I have better code structure
 modelPath = "pose_landmarker.task"
 
@@ -38,9 +36,18 @@ PoseLandmarkerOptions = vision.PoseLandmarkerOptions
 PoseLandmarkerResult = vision.PoseLandmarkerResult
 VisionRunningMode = vision.RunningMode
 
-# Debugging?
-def print_result(result, output_image: mp.Image, timestamp_ms: int):
-    print('pose landmarker result: {}'.format(result)) # Should be of type PoseLandmarkerResult but it errored so not explicit here 
+lastFrame = None #Last displayable frame
+def print_result(result, output, timestamp): #For now I don't use timestamp, it might error I don't care
+    global lastFrame
+
+    image = cv2.cvtColor(output.numpy_view(), cv2.COLOR_RGB2BGR)
+    
+    # 2. Check if any poses were actually detected
+    if (result.pose_landmarks):
+        lastFrame = drawLandmarks(output.numpy_view(), result) #Draw landmark
+        lastFrame = cv2.cvtColor(lastFrame, cv2.COLOR_RGB2BGR) # Back to BGR you go:3 for display or something
+    else:
+        lastFrame = image
 
 # PoseLandmarker instance created
 options = PoseLandmarkerOptions(base_options=BaseOptions(model_asset_path=modelPath),
@@ -49,11 +56,16 @@ options = PoseLandmarkerOptions(base_options=BaseOptions(model_asset_path=modelP
 
 # Open camera (CV2)
 # I super hate this bit because documentation was really messed up
-for i in range(0, 3): # Change to either 0/1/2 depending what camera I have for now.
+#for i in range(0, 3): # Change to either 0/1/2 depending what camera I have for now.
+for i in range(1, 3): #My builtin webcam works on some angles and I don't want to activate it
     camera = cv2.VideoCapture(i) 
-    if (camera.isOpened()): break; 
-    elif (camera == 2): print("Camera unavailable."); exit(); 
+    if (camera.isOpened()): break;
 
+if (not camera or not camera.isOpened()):
+    print("Camera unavailable.")
+    exit()
+
+lastFrame = None;
 
 with PoseLandmarker.create_from_options(options) as landmarker:
     while (True):
@@ -69,3 +81,11 @@ with PoseLandmarker.create_from_options(options) as landmarker:
         # This is Google's thing btw
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=convertedFrame)
         landmarker.detect_async(mp_image, int(time.time() * 1000))
+
+        #Draw on last frame received, else receive first frame
+        if (lastFrame is not None): cv2.imshow("phystris", lastFrame)
+        else: cv2.imshow("phystris", frame)
+        
+        # I forgot to render video lmao
+        if (cv2.waitKey(1) & 0xFF == ord('q')):
+            break
