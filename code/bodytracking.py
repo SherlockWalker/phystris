@@ -56,10 +56,15 @@ options = PoseLandmarkerOptions(base_options=BaseOptions(model_asset_path=modelP
 
 # Open camera (CV2)
 # I super hate this bit because documentation was really messed up
-#for i in range(0, 3): # Change to either 0/1/2 depending what camera I have for now.
-for i in range(1, 3): #My builtin webcam works on some angles and I don't want to activate it
+# Change to either 0/1/2 depending what camera I have for now. 
+# #My builtin webcam works on some angles and I don't want to activate it
+camera = cv2.VideoCapture(0);
+"""
+for i in range(0, 3):
     camera = cv2.VideoCapture(i) 
     if (camera.isOpened()): break;
+"""
+
 
 if (not camera or not camera.isOpened()):
     print("Camera unavailable.")
