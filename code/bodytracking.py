@@ -71,10 +71,9 @@ def print_result(result, output, timestamp): #For now I don't use timestamp, it 
     if (result.pose_landmarks):
         lastFrame = drawLandmarks(output.numpy_view(), result) #Draw landmark
         lastFrame = cv2.cvtColor(lastFrame, cv2.COLOR_RGB2BGR) # Back to BGR you go:3 for display or something
-        lastFrame = cv2.flip(lastFrame, 1) #Flip camera horizontally
         lastFrame = drawDetection(lastFrame, detections)
     else:
-        lastFrame = cv2.flip(image, 1)
+        lastFrame = image
 
 # PoseLandmarker instance created
 options = PoseLandmarkerOptions(base_options=BaseOptions(model_asset_path=modelPath),
