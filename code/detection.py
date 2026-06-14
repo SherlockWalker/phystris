@@ -12,14 +12,14 @@ class detectBox:
     def __init__(self, name: str, 
                        x1: float, y1: float, x2: float, y2: float, 
                        binding, #I need some special keys so I can't use str
-                       colour=(255, 0, 0), thickness=4):
+                       colourOn=(0, 255, 0), colourOff=(255, 0, 0), thickness=4):
         self.name = name
         self.x1 = x1
         self.y1 = y1
         self.x2 = x2
         self.y2 = y2
         self.binding = binding
-        self.colour = (colour[2], colour[1], colour[0])
+        self.colour = (colourOn[::-1], colourOff[::-1]) #Converted to BGR format here due to camera so after drawn it flips back
         self.thickness = thickness
         self.collided = False
 
