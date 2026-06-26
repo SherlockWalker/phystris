@@ -36,16 +36,8 @@ def bodytracking():
         else:
             frame = image
 
-        # Keybinds. Don't change them here!
-        keysDict = {'rotateL': detection.KEY_ROTATE_LEFT,
-                    'rotateR': detection.KEY_ROTATE_RIGHT,
-                    'moveL': detection.KEY_MOVE_LEFT,
-                    'moveR': detection.KEY_MOVE_RIGHT,
-                    'softdrop': detection.KEY_SOFT_DROP,
-                    'harddrop': detection.KEY_HARD_DROP}
-        
         frame = drawDetection(frame, detection.detections)
-        frame = drawStatusOverlays(frame, detection.isSoftDropping, detection.isJumping, detection.jumpStartTime, detection.HDmessageTime, keysDict,
+        frame = drawStatusOverlays(frame, detection.isSoftDropping, detection.isJumping, detection.jumpStartTime, detection.HDmessageTime,
                                     detection.SDline, detection.HDline)
         with shared.frameLock: shared.lastFrame = frame.copy()
 
@@ -84,7 +76,6 @@ def bodytracking():
                 print("Frame not received. Removing video stream."); break
                 
             frame = cv2.flip(frame, 1) #Flip camera horizontally
-            time.sleep(0.01)
 
             # For some historical reason, cameras read in BGR so I have to convert it to RGB
             convertedFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB); 

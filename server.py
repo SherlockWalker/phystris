@@ -100,3 +100,20 @@ def state():
     return {
         "camera_enabled": shared.camera_enabled
     }
+
+@app.get("/config")
+def get_config():
+    return shared.keybinds
+
+@app.post("/config")
+async def set_config(request: Request):
+    data = await request.json()
+
+    print("Received:", data)
+
+    for k, v in data.items():
+        shared.keybinds[k] = v
+
+    print("Stored:", shared.keybinds)
+
+    return shared.keybinds

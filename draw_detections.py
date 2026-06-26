@@ -43,7 +43,7 @@ def drawDetection(frame, detections):
     return frame
 
 
-def drawStatusOverlays(frame, isSoftDropping, isJumping, jumpStartTime, HDmessageTime, keysDict, SD, HD):
+def drawStatusOverlays(frame, isSoftDropping, isJumping, jumpStartTime, HDmessageTime, SD, HD):
     fy, fx, _ = frame.shape
 
     # To you: Modify the height of soft drop and hard drop line here!
@@ -74,14 +74,5 @@ def drawStatusOverlays(frame, isSoftDropping, isJumping, jumpStartTime, HDmessag
         HDtext = "NO HARD DROP"
         HDcolour = (0, 255, 0)
     cv2.putText(frame, f"JUMP STATE: {HDtext}", (fx // 2 - 100, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.6, HDcolour, 2, cv2.LINE_AA)
-    
-    # Draw key bindings helper at bottom
-    line1 = f"Rotate L: {keysDict['rotateL']} | Rotate R: {keysDict['rotateR']}"
-    line2 = f"Move L: {keysDict['moveL']} | Move R: {keysDict['moveR']}"
-    line3 = f"Soft Drop: {keysDict['softdrop']} | Hard Drop: {keysDict['harddrop']}"
-    
-    cv2.putText(frame, line1, (20, fy - 50), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (200, 200, 200), 1, cv2.LINE_AA)
-    cv2.putText(frame, line2, (20, fy - 35), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (200, 200, 200), 1, cv2.LINE_AA)
-    cv2.putText(frame, line3, (20, fy - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (200, 200, 200), 1, cv2.LINE_AA)
     
     return frame

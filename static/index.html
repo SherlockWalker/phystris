@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PhysTris</title>
+    <link rel="stylesheet" href="/static/index.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>PhysTris</h1>
+    </header>
+
+    <div class="video-container">
+        <img src="/video" id="videoFeed">
+
+        <div id="overlay" class="overlay">
+            Click to enable camera
+        </div>
+    </div>
+
+    <div class="panel">
+        <button id="cameraBtn" onclick="toggleCamera()">Camera: ON</button>
+    </div>
+
+    <div class="settings">
+        <table>
+            <tr>
+                <th colspan="4">
+                    <h3>Keybinds</h3>
+                </th>
+            </tr>
+            <tr>
+                <td><label>Move Left</label></td>
+                <td><input id="moveL" type="text"></td>
+                <td><label>Move Right</label></td>
+                <td><input id="moveR" type="text"></td>
+            </tr>
+
+            <tr>
+                <td><label>Rotate Left</label></td>
+                <td><input id="rotateL" type="text"></td>
+                <td><label>Rotate Right</label></td>
+                <td><input id="rotateR" type="text"></td>
+            </tr>
+
+            <tr>
+                <td><label>Soft Drop</label></td>
+                <td><input id="softdrop" type="text"></td>
+                <td><label>Hard Drop</label></td>
+                <td><input id="harddrop" type="text"></td>
+            </tr>
+
+            <tr>
+                <td colspan="4">
+                    <button onclick="saveConfig()">Apply</button>
+                </td>
+            </tr>
+        </table>
+
+    </div>
+
+    <script>
+        let cameraEnabled = false;
+        let cameraReady = false;
+
+        async function toggleCamera() {
+            await fetch('/camera/toggle', { method: 'POST' });
+            cameraEnabled = !cameraEnabled;
+
+            updateOverlay();
+            pollFrameUntilReady();
+        }
+
+        async function pollFrameUntilReady() {
+            if (!cameraEnabled) return;
+
+            const interval = setInterval(async () => {
+                const res = await fetch('/camera/status');
+                const data = await res.json();
+
+                if (data.ready) {
+                    cameraReady = true;
+                    clearInterval(interval);
+                    updateOverlay();
+                }
+            }, 500);
+        }
+
+        async function updateOverlay() {
+            const overlay = document.getElementById("overlay");
+
+            if (!cameraEnabled) {
+                overlay.style.display = "flex";
+                overlay.innerText = "Click to enable camera";
+                return;
+            }
+
+            if (cameraEnabled && !cameraReady) {
+                overlay.style.display = "flex";
+                overlay.innerText = "Loading camera...";
+                return;
+            }
+
+            if (cameraReady) {
+                overlay.style.display = "none";
+            }
+        }
+
+        async function loadConfig() {
+            const res = await fetch('/config');
+            const cfg = await res.json();
+
+            document.getElementById("moveL").value = cfg.moveL;
+    document.getElementById("moveR").value = cfg.moveR;
+    document.getElementById("rotateL").value = cfg.rotateL;
+    document.getElementById("rotateR").value = cfg.rotateR;
+    document.getElementById("softdrop").value = cfg.softdrop;
+    document.getElementById("harddrop").value = cfg.harddrop;
+        }
+
+        async function saveConfig() {
+            const payload = {
+                moveL: document.getElementById("moveL").value,
+                moveR: document.getElementById("moveR").value,
+                rotateL: document.getElementById("rotateL").value,
+                rotateR: document.getElementById("rotateR").value,
+                softdrop: document.getElementById("softdrop").value,
+                harddrop: document.getElementById("harddrop").value,
+            };
+            console.log(payload);
+            await fetch('/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+        }
+
+        loadConfig();
+
+        // initial state sync
+        (async () => {
+            const res = await fetch('/camera/status');
+            const data = await res.json();
+
+            cameraEnabled = data.enabled;
+            cameraReady = data.ready;
+
+            updateOverlay();
+
+            if (cameraEnabled && !cameraReady) {
+                pollFrameUntilReady();
+            }
+        })();
+    </script>
+
+</body>
+</html>

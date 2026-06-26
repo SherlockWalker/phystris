@@ -4,6 +4,10 @@ body {
     background: #111;
     color: white;
     text-align: center;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .video-container {
@@ -11,6 +15,8 @@ body {
     width: 640px;
     height: 480px;
     background: black;
+
+    margin: 20px auto;
 }
 
 #videoFeed {
@@ -35,6 +41,35 @@ body {
     font-size: 20px;
 
     cursor: pointer;
+}
+
+.panel {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.settings {
+    width: 80%;
+    max-width: 800px;
+    margin: 20px auto;
+}
+
+.settings table {
+    width: 100%;
+    margin: auto;
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+
+.settings td,
+.settings th {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.settings input {
+    text-align: center;
 }
 
 button {
