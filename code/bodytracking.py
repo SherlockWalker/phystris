@@ -78,6 +78,7 @@ def bodytracking():
         detection.createDetections()
         
         while (shared.running):
+            if not shared.camera_enabled: time.sleep(0.05); continue
             hasRead, frame = camera.read()
             if (not hasRead): # Just exit the camera stream entirely
                 print("Frame not received. Removing video stream."); break

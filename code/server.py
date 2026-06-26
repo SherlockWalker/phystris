@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi import Request
 from fastapi.responses import StreamingResponse, HTMLResponse
 from contextlib import asynccontextmanager
 
@@ -34,11 +35,34 @@ def index():
     return """
     <html>
         <head>
-            <title>Pose Tracker</title>
+            <title>PhysTris</title>
         </head>
+
         <body>
-            <h1>Pose Tracker</h1>
+            <h1>PhysTris</h1>
             <img src="/video">
+
+            <div class="panel">
+                <button id="cameraBtn" onclick="toggleCamera()">Camera: ON</button>
+            </div>
+
+            <script>
+                async function toggleCamera() 
+                {
+                    await fetch('/camera/toggle', { method: 'POST' });
+                    updateButton();
+                }
+
+                async function updateButton() 
+                {
+                    const res = await fetch('/state');
+                    const data = await res.json();
+                    const btn = document.getElementById("cameraBtn");
+                    btn.innerText = data.camera_enabled ? "Camera: ON" : "Camera: OFF";
+                }
+                updateButton();
+                setInterval(updateButton, 1000);
+            </script>
         </body>
     </html>
     """
@@ -46,18 +70,14 @@ def index():
 
 def generate_frames():
     while True:
-
         with shared.frameLock:
             frame = None if shared.lastFrame is None else shared.lastFrame.copy()
 
-        if frame is None:
-            time.sleep(0.01)
-            continue
+        if frame is None: time.sleep(0.01); continue
 
         success, buffer = cv2.imencode(".jpg", frame)
 
-        if not success:
-            continue
+        if not success: continue
 
         yield (
             b"--frame\r\n"
@@ -82,4 +102,21 @@ def health():
     return {
         "camera_running": shared.lastFrame is not None,
         "tracking_running": shared.running
+    }
+
+@app.post("/camera/toggle")
+def toggle_camera():
+    shared.camera_enabled = not shared.camera_enabled
+    return {"camera_enabled": shared.camera_enabled}
+
+@app.post("/camera/set")
+async def set_camera(request: Request):
+    data = await request.json()
+    shared.camera_enabled = bool(data.get("enabled", True))
+    return {"camera_enabled": shared.camera_enabled}
+
+@app.get("/state")
+def state():
+    return {
+        "camera_enabled": shared.camera_enabled
     }
