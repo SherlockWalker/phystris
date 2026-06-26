@@ -43,14 +43,14 @@ def drawDetection(frame, detections):
     return frame
 
 
-def drawStatusOverlays(frame, isSoftDropping, isJumping, jumpStartTime, HDmessageTime, keysDict):
+def drawStatusOverlays(frame, isSoftDropping, isJumping, jumpStartTime, HDmessageTime, keysDict, SD, HD):
     fy, fx, _ = frame.shape
 
     # To you: Modify the height of soft drop and hard drop line here!
     # Multiplier 0 is top, 1 is bottom
     # I may make a slider thing
-    SDline = int(fy / 2)
-    HDline = int(fy * 2 / 3)
+    SDline = int(fy * SD)
+    HDline = int(fy * HD)
     
     # Draw the soft drop line and hard drop line
     cv2.line(frame, (0, SDline), (fx, SDline), (0, 165, 255), 2, cv2.LINE_AA)

@@ -7,3 +7,7 @@ Here I mix complicated tech with something that I am familiar with to create a m
 Below is the idea that I'm trying to create. Other than that I'll be using the SRS (NOT SRS-180, despite me playing TETR.IO, and for other reasons I'll mention later) kick table for the Tetris bit.
 
 ![phystris graphics](phystris_graphics/phystech%20tetris.png)
+
+To run: 
+- `pip install fastapi uvicorn opencv-python mediapipe numpy`
+- `python code/run.py`

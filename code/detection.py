@@ -32,6 +32,10 @@ jumpStartTime = None
 lastHDtime = 0.0
 HDmessageTime = 0.0
 
+#SD/HD line ratio, 0-1 where 0 is top of screen
+SDline = 1/2
+HDline = 2/3
+
 class detectBox:
     def __init__(self, name: str, 
                        x1: float, y1: float, x2: float, y2: float, 
@@ -121,7 +125,7 @@ def updatePostures(landmarks):
     # Other than this we need a case to determine if they're on top half of screen or not
     shouldSoftDrop = True
     for lm in pose_landmarks:
-        if lm.visibility > 0.5 and lm.y < 0.5:
+        if lm.visibility > 0.5 and lm.y < SDline:
             shouldSoftDrop = False; break
     if shouldSoftDrop and not isSoftDropping:
         keyboard.press(KEY_SOFT_DROP); isSoftDropping = True
@@ -129,10 +133,11 @@ def updatePostures(landmarks):
         keyboard.release(KEY_SOFT_DROP); isSoftDropping = False
 
     # I'm beginning to think that 0.5 is too tall of an order to jump because I was dumb and set it to 0.5 before
-    # so I'm lowering it to just the height of the move blocks as per my old diagram, which is 1/6 from the bottom up
+    # As per my old diagram, which is 1/6 from the ground, that's too little since foot detection is a little inconsistent
+
     shouldHardDrop = True
     for lm in pose_landmarks:
-        if lm.visibility > 0.5 and lm.y >= 2 / 3: 
+        if lm.visibility > 0.5 and lm.y >= HDline: 
             shouldHardDrop = False; break
             
     now = time.time()
@@ -159,6 +164,6 @@ def updateMacros(landmarks):
     for detect in detections: detect.update(landmarks)
 
 def cleanup():
-    for key in [KEY_ROTATE_LEFT, "KEY_ROTATE_RIGHT", "KEY_MOVE_LEFT", "KEY_MOVE_RIGHT", "KEY_SOFT_DROP", "KEY_HARD_DROP"]: 
+    for key in [KEY_ROTATE_LEFT, KEY_ROTATE_RIGHT, KEY_MOVE_LEFT, KEY_MOVE_RIGHT, KEY_SOFT_DROP, KEY_HARD_DROP]:
         try: keyboard.release(key)
         except: pass
