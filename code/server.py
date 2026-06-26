@@ -1,16 +1,18 @@
 from fastapi import FastAPI
 from fastapi import Request
-from fastapi.responses import StreamingResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import StreamingResponse, HTMLResponse, FileResponse
 from contextlib import asynccontextmanager
 
 import cv2
 import time
 import threading
+import os
 
 import shared
 import bodytracking
 
-
+print("SERVER.PY LOADED.")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Start body tracking in background thread
@@ -28,44 +30,14 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
-@app.get("/", response_class=HTMLResponse)
-def index():
-    return """
-    <html>
-        <head>
-            <title>PhysTris</title>
-        </head>
-
-        <body>
-            <h1>PhysTris</h1>
-            <img src="/video">
-
-            <div class="panel">
-                <button id="cameraBtn" onclick="toggleCamera()">Camera: ON</button>
-            </div>
-
-            <script>
-                async function toggleCamera() 
-                {
-                    await fetch('/camera/toggle', { method: 'POST' });
-                    updateButton();
-                }
-
-                async function updateButton() 
-                {
-                    const res = await fetch('/state');
-                    const data = await res.json();
-                    const btn = document.getElementById("cameraBtn");
-                    btn.innerText = data.camera_enabled ? "Camera: ON" : "Camera: OFF";
-                }
-                updateButton();
-                setInterval(updateButton, 1000);
-            </script>
-        </body>
-    </html>
-    """
+@app.get("/")
+def root():
+    return FileResponse("static/index.html")
 
 
 def generate_frames():
@@ -74,6 +46,7 @@ def generate_frames():
             frame = None if shared.lastFrame is None else shared.lastFrame.copy()
 
         if frame is None: time.sleep(0.01); continue
+        shared.camera_ready = True
 
         success, buffer = cv2.imencode(".jpg", frame)
 
@@ -114,6 +87,13 @@ async def set_camera(request: Request):
     data = await request.json()
     shared.camera_enabled = bool(data.get("enabled", True))
     return {"camera_enabled": shared.camera_enabled}
+
+@app.get("/camera/status")
+def camera_status():
+    return {
+        "enabled": shared.camera_enabled,
+        "ready": shared.camera_ready
+    }
 
 @app.get("/state")
 def state():
